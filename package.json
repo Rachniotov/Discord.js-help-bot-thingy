@@ -9,6 +9,6 @@
   "author": "rach",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.5.1"
+    "discord.js": "github:discordjs/discord.js"
   }
 }

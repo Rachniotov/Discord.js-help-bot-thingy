@@ -1,8 +1,9 @@
 const Discord = require("discord.js");   // import djs
-const client = new Discord.Client({ disableMentions: "everyone" }); // create a client with @everyone mentions disabled
+const client = new Discord.Client({ intents: ["DIRECT_MESSAGES", "DIRECT_MESSAGE_REACTIONS", "GUILDS", "GUILD_EMOJIS", "GUILD_MEMBERS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }); // create a client with @everyone mentions disabled
 const config = require("./config.json"); // import config.json file, which should contan the token
 const fs = require("fs")                 // import fs
 client.commands = new Map();             // create a map for storing commands (idk why i used map :p)
+client.snippets = new Map();             // create a map for storing snippets (same reason ^^^^^^ :p)
 
 client.on("ready", () => {               // ready event
     console.log(`${client.user.tag} is on!`);
@@ -22,6 +23,23 @@ client.on("message", message => {        // message event
                 args.shift();                   // remove the first element coz we dont need it
                 e.run(message, args, client);   // run the command file's function
             }
+        }
+    })
+    let haveToReply = false;
+    const eh = (reference, content) => {
+        let bool = false;
+        for (const s of reference) {
+            if (content.includes(s)) {
+                return bool = true;
+            }
+        }
+        return bool;
+    }
+    client.snippets.forEach(e => {
+        haveToReply = eh(e.toDetect, message.content);
+        if (haveToReply) {
+            message.reply(e.toAnswer);
+            return;
         }
     })
 })
