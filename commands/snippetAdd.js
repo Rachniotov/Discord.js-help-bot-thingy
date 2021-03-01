@@ -18,51 +18,47 @@ module.exports = {
         const questions = ["Type the keywords that you want the snippet to react to, just type them in the chat and when you are done, react with ✔️ to go to the next step or react with ❌ to cancel making a snippet.\nExample: ```\nuser's message: HELP!11! cannot find module \"HZUBDW.js\"```\n```ideal example:\ncannot find module```",
             "Provide the response you want to repond with if user messaged something related. While sharing long codes, make sure to use code bins."
         ];
-        const filter = m => m.author.id === message.author.id;
+        const filter = m => m.author.id === message.author.id; // filter out other user's messages
         const embed = new Discord.MessageEmbed()
             .setDescription("react with ✔️ to continue to the next step\nreact with ❌");
         const embedMessage = await message.channel.send(questions[0], embed);
         await embedMessage.react("✔️");
         await embedMessage.react("❌");
-        const rFilter = (reaction, user) => {
+        const rFilter = (reaction, user) => {                  // filter out other reactions as well as other user's reactions
             return (reaction.emoji.name === "✔️" || reaction.emoji.name === "❌") && user.id === message.author.id;
         }
         let bool = false;
-        const rCollector = embedMessage.createReactionCollector(rFilter, { max: 1 });
-        const collector = new Discord.MessageCollector(message.channel, filter);
+        const rCollector = embedMessage.createReactionCollector(rFilter, { max: 1 }); // reaction collector
+        const collector = new Discord.MessageCollector(message.channel, filter);      // message collector
         rCollector.on("end", reaction => {
-            if (reaction.first().emoji.name === "✔️") {
-                collector.stop();
-                console.log("y")
+            if (reaction.first().emoji.name === "✔️") {    // if user reacted with ✔️ 
+                collector.stop();                          // stop the collector 
             } else {
-                bool = true;
-                collector.stop();
-                console.log("n")
+                bool = true;                               // else make the variable true
+                collector.stop();                          // stop the colector
             }
         })
         collector.on("end", async collected => {
             if (bool) {
-                console.log("nuhuh")
                 message.channel.send("Canceled making a new snippet");
                 await embedMessage.reactions.removeAll();
                 return;
             }
-            if (!collected) {
+            if (!collected) {                              // if there is no responce, return
                 message.channel.send("Canceled making a new snippet");
                 await embedMessage.reactions.removeAll();
                 return;
             }
             let responses = [];
-            collected.forEach(e => {
-                responses.push(e.content.toLowerCase());
+            collected.forEach(e => {                          // loop through each message collected
+                responses.push(e.content.toLowerCase());      // push the responce to the array
             })
 
             message.channel.send(questions[1])
-            const idkWhatCollector = new Discord.MessageCollector(message.channel, filter, { max: 1 });
+            const idkWhatCollector = new Discord.MessageCollector(message.channel, filter, { max: 1 }); // another message collector
             idkWhatCollector.on("end", collected => {
-                console.log("idk")
                 const answer = collected.first().content;
-                const randomStr = (len) => {
+                const randomStr = (len) => {        // funtion to generate a String of random characters
                     let result = "";
                     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                     for (let i = 0; i < len; i++) {
@@ -70,39 +66,40 @@ module.exports = {
                     }
                     return result;
                 }
-                const saving = async () => {
-                    let code = randomStr(8);
-                    const existing = client.snippets.get(code);
-                    if (existing) {
+                const saving = async () => {                        // the main function for saving the thing and other stuff
+                    let code = randomStr(8);                        // generate a string with random characters
+                    const existing = client.snippets.get(code);     // try to get the map's element same as the random String
+                    if (existing) {                                 // if it exists, recurse
                         return saving();
-                    } else {
-                        client.snippets.set(code, {
-                            toDetect: responses,
+                    } else {                                        // if not, continue
+                        client.snippets.set(code, {                 // set the map with the element named same as the random string
+                            toDetect: responses,                    // save all the stuff
                             toAnswer: answer,
+                            guild: message.guild.id,
                             by: {
                                 id: message.author.id,
                                 tag: message.author.tag,
                                 createdAt: new Date().toDateString()
                             }
                         })
-                        const requestOpts = {
+                        const requestOpts = {                       // make a new object for storing the info regarding the request
                             method: "POST",
                             hostname: "haste.monkedev.com",
                             path: "/documents",
                         };
                         let data = "";
                         let link = "";
-                        new Promise(reso => {
-                            const request = https.request(requestOpts, res => {
+                        new Promise(reso => {                                       // make a new promise
+                            const request = https.request(requestOpts, res => {     // make a post request 
                                 res.once("data", e => {
-                                    data += e;
-                                    let json = JSON.parse(data);
-                                    link = `https://haste.monkedev.com/${json.key}`
-                                    reso(link);
+                                    data += e;                                      // append incoming data to the variable
+                                    let json = JSON.parse(data);                    // parse the data 
+                                    link = `https://haste.monkedev.com/${json.key}` // generate a link
+                                    reso(link);                                     // resolve with the link
                                 })
                             })
-                            request.write(answer.toString());
-                            request.end();
+                            request.write(answer.toString());                       // write the content to the site
+                            request.end();                                          // end the connection
                         }).then(lnk => {
                             const embed = new Discord.MessageEmbed()
                                 .setAuthor(message.author.user, message.author.displayAvatarURL({ dynamic: true }))
@@ -113,7 +110,7 @@ module.exports = {
                         })
                     }
                 }
-                saving();
+                saving();   // calling the function
 
             })
         })

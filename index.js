@@ -1,5 +1,5 @@
 const Discord = require("discord.js");   // import djs
-const client = new Discord.Client({ intents: ["DIRECT_MESSAGES", "DIRECT_MESSAGE_REACTIONS", "GUILDS", "GUILD_EMOJIS", "GUILD_MEMBERS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }); // create a client with @everyone mentions disabled
+const client = new Discord.Client({ intents: ["DIRECT_MESSAGES", "DIRECT_MESSAGE_REACTIONS", "GUILDS", "GUILD_EMOJIS", "GUILD_MEMBERS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"] }); // create a client with intents
 const config = require("./config.json"); // import config.json file, which should contan the token
 const fs = require("fs")                 // import fs
 client.commands = new Map();             // create a map for storing commands (idk why i used map :p)
@@ -26,7 +26,7 @@ client.on("message", message => {        // message event
         }
     })
     let haveToReply = false;
-    const eh = (reference, content) => {
+    const eh = (reference, content) => {        // simple function to check if a String contains something same as the reference String[]
         let bool = false;
         for (const s of reference) {
             if (content.includes(s)) {
@@ -35,13 +35,14 @@ client.on("message", message => {        // message event
         }
         return bool;
     }
-    client.snippets.forEach(e => {
-        haveToReply = eh(e.toDetect, message.content);
-        if (haveToReply) {
-            message.reply(e.toAnswer);
+    client.snippets.forEach(e => {                         // looping through the map
+        if (message.guild.id !== e.guild) return;          // returning if the guild id doesnt match
+        haveToReply = eh(e.toDetect, message.content);     // calling the function and storing the value returned
+        if (haveToReply) {                                 // checking if the variable is true 
+            message.reply(e.toAnswer);                     // replying
             return;
         }
     })
 })
 
-client.login(config.token);              // login with the token
+client.login(config.token);                                 // login with the token
