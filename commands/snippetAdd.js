@@ -1,6 +1,8 @@
 const Discord = require("discord.js");              // import stuff
 const { Client, Message } = require("discord.js");
 const https = require("https");
+const mongo = require("../mongo");
+const model = require("../schemas/snippetSchema");
 /*
   so explaining this here coz idk where to... Snippets would be like for example: if a user says "cannot find module blah blah",
   you can have an automated responce for it which you can ofc edit atferwards and delete too (ill make the cmds for both afterwards)
@@ -80,6 +82,24 @@ module.exports = {
                                 id: message.author.id,
                                 tag: message.author.tag,
                                 createdAt: new Date().toDateString()
+                            }
+                        })
+                        await mongo().then(mongoose => {                // create a db connection
+                            try {
+                                const doc = new model({                 // store whole document in a local var
+                                    id: code,
+                                    toDetect: responses,
+                                    toAnswer: answer,
+                                    guild: message.guild.id,
+                                    by: {
+                                        id: message.author.id,
+                                        tag: message.author.tag,
+                                        createdAt: new Date().toDateString()
+                                    }
+                                })
+                                doc.save();                             // save the document t0 the db
+                            } catch {
+                                return;
                             }
                         })
                         const requestOpts = {                       // make a new object for storing the info regarding the request

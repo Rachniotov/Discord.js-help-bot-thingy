@@ -9,6 +9,7 @@
   "author": "rach",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "github:discordjs/discord.js"
+    "discord.js": "github:discordjs/discord.js",
+    "mongoose": "^5.11.15"
   }
 }

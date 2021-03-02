@@ -4,6 +4,8 @@ const config = require("./config.json"); // import config.json file, which shoul
 const fs = require("fs")                 // import fs
 client.commands = new Map();             // create a map for storing commands (idk why i used map :p)
 client.snippets = new Map();             // create a map for storing snippets (same reason ^^^^^^ :p)
+const mongo = require("./mongo");
+const snippetSchema = require("./schemas/snippetSchema");
 
 client.on("ready", () => {               // ready event
     console.log(`${client.user.tag} is on!`);
@@ -12,6 +14,19 @@ client.on("ready", () => {               // ready event
         const functions = require(__dirname + "/commands" + `/${file}`); // getting all exported stuff and storing in a temp var
         client.commands.set(file.split(".")[0], functions);              // adding stuff to commands map | map(filename, exported stuff)
     }
+    mongo().then(async mongoose => {                                     // making a db connection
+        try {
+            console.log("connected to mongo");
+            if (!client.snippets.size) {                                 // if cache has nothing,
+                const data = await snippetSchema.find();                 // get data from the db,
+                for (const o of data) {                                  // loop through the data
+                    client.snippets.set(o.id, o);                        // add each thing in the cache
+                }
+            }
+        } finally {
+            mongoose.connection.close();
+        }
+    })
 })
 
 client.on("message", message => {        // message event
