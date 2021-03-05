@@ -29,13 +29,14 @@ client.on("ready", () => {               // ready event
     })
 })
 
-client.on("message", message => {        // message event
-    if (message.author.bot) return;      // return if the author of the message is a bot
-    client.commands.forEach(e => {       // loop through each element in commands map
-        for (const aliases of e.name) {  // loop thorugh each `name` attribute of the exported module
-            if (message.content.toLowerCase().startsWith(`$${aliases.toLowerCase()}`)) { // check if message's content starts with the command aliases
-                const args = message.content.split(/[ ]+/g); // define args
-                args.shift();                   // remove the first element coz we dont need it
+client.on("message", message => {                // message event
+    if (message.author.bot) return;              // return if the author of the message is a bot
+    const args = message.content.slice(1).trim().split(/ +/g); // define args
+    const cmd = args[0].toLowerCase();          // get the command name
+    args.shift();                               // remove the first element coz we dont need it
+    client.commands.forEach(e => {              // loop through each element in commands map
+        for (const aliases of e.name) {         // loop thorugh each `name` attribute of the exported module
+            if (cmd === aliases) {              // check if message's content starts with the command aliases
                 e.run(message, args, client);   // run the command file's function
             }
         }

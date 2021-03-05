@@ -19,4 +19,4 @@ const schema = new mongoose.Schema({
         createdAt: reqStr
     }
 })
-module.exports = new mongoose.model("snippets", schema);
+module.exports = mongoose.model("snippets", schema);
